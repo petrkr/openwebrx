@@ -634,6 +634,8 @@ function canvas_touchmove(evt) {
     canvas_drag_last_y = evt.changedTouches[0].pageY;
     mkscale();
     bookmarks.position();
+
+    evt.preventDefault();
 }
 
 function canvas_end_drag() {
