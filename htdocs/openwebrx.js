@@ -536,6 +536,7 @@ function format_frequency(format, freq_hz, pre_divide, decimals) {
 
 var canvas_drag = false;
 var canvas_drag_min_delta = 1;
+var canvas_touch_down = false;
 var canvas_mouse_down = false;
 var canvas_drag_last_x;
 var canvas_drag_last_y;
@@ -593,6 +594,46 @@ function canvas_mouseup(evt) {
         canvas_end_drag();
     }
     canvas_mouse_down = false;
+}
+
+function canvas_touchstart(evt) {
+    // If there is multitouch, ignore it
+    if (evt.touches.length > 1) return;
+
+    canvas_touch_down = true;
+    canvas_drag = false;
+    canvas_drag_last_x = canvas_drag_start_x = evt.changedTouches[0].pageX;
+    canvas_drag_last_y = canvas_drag_start_y = evt.changedTouches[0].pageY;
+}
+
+function canvas_touchmove(evt) {
+    if (!waterfall_setup_done) return;
+    if (!canvas_touch_down) return;
+
+    // If there is multitouch, ignore it
+    if (evt.touches.length > 1) return;
+
+    if (!canvas_drag && Math.abs(evt.changedTouches[0].pageX - canvas_drag_start_x) > canvas_drag_min_delta) {
+        canvas_drag = true;
+        canvas_container.style.cursor = "move";
+    }
+
+    if (!canvas_drag) return;
+
+    var deltaX = canvas_drag_last_x - evt.changedTouches[0].pageX;
+    var dpx = range.hps * deltaX;
+    if (
+        !(zoom_center_rel + dpx > (bandwidth / 2 - waterfallWidth() * (1 - zoom_center_where) * range.hps)) &&
+        !(zoom_center_rel + dpx < -bandwidth / 2 + waterfallWidth() * zoom_center_where * range.hps)
+    ) {
+        zoom_center_rel += dpx;
+    }
+
+    resize_canvases();
+    canvas_drag_last_x = evt.changedTouches[0].pageX;
+    canvas_drag_last_y = evt.changedTouches[0].pageY;
+    mkscale();
+    bookmarks.position();
 }
 
 function canvas_end_drag() {
@@ -1129,6 +1170,8 @@ function init_canvas_container() {
     canvas_container.addEventListener("mouseup", canvas_mouseup, false);
     canvas_container.addEventListener("mousedown", canvas_mousedown, false);
     canvas_container.addEventListener("wheel", canvas_mousewheel, false);
+    canvas_container.addEventListener("touchstart", canvas_touchstart, false);
+    canvas_container.addEventListener("touchmove", canvas_touchmove, false);
     $("#openwebrx-frequency-container").each(function(){
         this.addEventListener("wheel", canvas_mousewheel, false);
     });
