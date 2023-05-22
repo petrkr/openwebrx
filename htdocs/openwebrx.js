@@ -615,7 +615,6 @@ function canvas_touchmove(evt) {
 
     if (!canvas_drag && Math.abs(evt.changedTouches[0].pageX - canvas_drag_start_x) > canvas_drag_min_delta) {
         canvas_drag = true;
-        canvas_container.style.cursor = "move";
     }
 
     if (!canvas_drag) return;
