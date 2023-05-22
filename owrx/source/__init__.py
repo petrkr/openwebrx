@@ -585,6 +585,7 @@ class SdrDeviceDescription(object):
     def getProfileInputs(self) -> List[Input]:
         keys = self.getProfileMandatoryKeys() + self.getProfileOptionalKeys()
         return [TextInput("name", "Profile name", validator=RequiredValidator())] + [
+                CheckboxInput("profile_enabled", "Enable this profile", converter=OptionalConverter(defaultFormValue=True))] + [
             i for i in self.getInputs() if i.id in keys
         ]
 
@@ -650,7 +651,7 @@ class SdrDeviceDescription(object):
         return keys
 
     def getProfileMandatoryKeys(self):
-        return ["name", "center_freq", "samp_rate", "start_freq", "start_mod"]
+        return ["name", "profile_enabled", "center_freq", "samp_rate", "start_freq", "start_mod"]
 
     def getProfileOptionalKeys(self):
         return [
